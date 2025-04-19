@@ -1,4 +1,5 @@
 import sqlite3 as sql
+import subprocess as sp
 
 
 def connect_create_cursor():
@@ -10,6 +11,7 @@ def connect_create_cursor():
 def close_save_database():
     conn.commit()
     conn.close()
+
 def just_close_database(): #this will just close the connection without commiting.
     conn.close()
 def menu():
@@ -17,29 +19,28 @@ def menu():
     
     
     
- 
- 
-$$\   $$\                       $$\           $$$$$$$$\                            $$\       
-$$$\  $$ |                      $$ |          \__$$  __|                           $$ |      
-$$$$\ $$ | $$$$$$\   $$$$$$\  $$$$$$\            $$ | $$$$$$\  $$\   $$\  $$$$$$$\ $$$$$$$\  
-$$ $$\$$ |$$  __$$\  \____$$\ \_$$  _|           $$ |$$  __$$\ $$ |  $$ |$$  _____|$$  __$$\ 
-$$ \$$$$ |$$$$$$$$ | $$$$$$$ |  $$ |             $$ |$$ /  $$ |$$ |  $$ |$$ /      $$ |  $$ |
-$$ |\$$$ |$$   ____|$$  __$$ |  $$ |$$\          $$ |$$ |  $$ |$$ |  $$ |$$ |      $$ |  $$ |
-$$ | \$$ |\$$$$$$$\ \$$$$$$$ |  \$$$$  |         $$ |\$$$$$$  |\$$$$$$  |\$$$$$$$\ $$ |  $$ |
-\__|  \__| \_______| \_______|   \____/          \__| \______/  \______/  \_______|\__|  \__|
+
+███╗   ██╗███████╗ █████╗ ████████╗    ████████╗ ██████╗ ██╗   ██╗ ██████╗██╗  ██╗     ██████╗██╗     ███████╗ █████╗ ███╗   ██╗██╗███╗   ██╗ ██████╗ 
+████╗  ██║██╔════╝██╔══██╗╚══██╔══╝    ╚══██╔══╝██╔═══██╗██║   ██║██╔════╝██║  ██║    ██╔════╝██║     ██╔════╝██╔══██╗████╗  ██║██║████╗  ██║██╔════╝ 
+██╔██╗ ██║█████╗  ███████║   ██║          ██║   ██║   ██║██║   ██║██║     ███████║    ██║     ██║     █████╗  ███████║██╔██╗ ██║██║██╔██╗ ██║██║  ███╗
+██║╚██╗██║██╔══╝  ██╔══██║   ██║          ██║   ██║   ██║██║   ██║██║     ██╔══██║    ██║     ██║     ██╔══╝  ██╔══██║██║╚██╗██║██║██║╚██╗██║██║   ██║
+██║ ╚████║███████╗██║  ██║   ██║          ██║   ╚██████╔╝╚██████╔╝╚██████╗██║  ██║    ╚██████╗███████╗███████╗██║  ██║██║ ╚████║██║██║ ╚████║╚██████╔╝
+╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝   ╚═╝          ╚═╝    ╚═════╝  ╚═════╝  ╚═════╝╚═╝  ╚═╝     ╚═════╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═══╝ ╚═════╝ 
+                                                                                                                                                      
+
+
                                                                                             
-                                                                                            
-                                                                                            
-                                                                                                             
+ENTER ONE OF THE FOLLOWING NUMBERS:                                                                                                            
                                                                                                                                                              
 1- ADD a client
 2- REMOVE a client
 3- Consult Information
-4- Exit application
+4- UPDATE Client Info
+5- Exit application
     """)
     prompt=int(input("""What would you like to do? Enter the number for the desired action:  """))
+    sp.run('cls',shell=True)#this will clear the terminal , so the old output doesnt show with the new output.
     return prompt
-
 def Add_Client():
     try:
         connect_create_cursor()#this will connect and create the cursor to interact with the database.
@@ -63,28 +64,73 @@ def Add_Client():
 
             again = input("Would like to add more clients?(y/n) ")
         close_save_database()#this will save data to database and close the connection.
+        sp.run('cls', shell=True)  # this will clear the terminal , so the old output doesnt show with the new output.
+    except KeyboardInterrupt:
+        just_close_database()
+        pass
+
     except:
         print("ERROR!!! you entered an invalid input, the process will restart")
         Add_Client()
-
 def Delete_Client():
     pass
+def Update_Client_Menu():
+    update_info = int(input("""
+    Which information would you like to MODIFY ?
+    1- Client Name
+    2- Phone
+    3- Address 
+    4- City
+    5- House size
+    6- Price
+    7- ALL or more than 1 information
+        
+    Enter the number for the desired Modification: """))
+    return update_info
+def Update_Client():
+    while True:
 
+        if Update_Client_Menu() == 1: #This updates the client's name.
+            connect_create_cursor()
+            old_name = str(input("Current Name: ")).upper()
+            new_name =str(input("New Name: ")).upper()
+            cur.execute("SELECT name from clients;")
+            confirm_name_exists = cur.fetchone()
+            if old_name == confirm_name_exists[0]:
+                cur.execute("UPDATE clients SET name = ? WHERE name = ? ;",(new_name,old_name) )
+                close_save_database()
+                break
+            else:
+                print("The Client's name specified could NOT be found,Please try again.")
 def Consult_Client():
     connect_create_cursor()
-    consult_name =str(input("What client would you like to consult about?")).upper()
+    consult_name =str(input("Enter client's name or 'all' to see every client:")).upper()
+    if consult_name != "ALL":
+        cur.execute(f"SELECT * FROM clients WHERE name LIKE '{consult_name}%'")
+        IDnumber = cur.fetchall() # Fetchall returns a list with all the rows, each row is a tuple within the list. Fetchone() will return just one row at a time.
 
-    cur.execute(f"SELECT * FROM clients WHERE name LIKE '{consult_name}%'")
-    IDnumber =cur.fetchall()
-    Many_clients_Count = 0
-    for clients in IDnumber:
-        print(f"""
-    ________________________________________________________________________________________________________________
-     Name:{IDnumber[Many_clients_Count][1]} | Phone: {IDnumber[Many_clients_Count][2]} | Address:{IDnumber[Many_clients_Count][3]} | Price: {IDnumber[0][6]} 
-     ID: {IDnumber[Many_clients_Count][0]:<10} | Footage ^2: {IDnumber[Many_clients_Count][5]} | Started on: {IDnumber[Many_clients_Count][7]} | City: {IDnumber[Many_clients_Count][4]}
-    ________________________________________________________________________________________________________________
-        \n""")
-        Many_clients_Count=+1
+        for clients in IDnumber:
+            print(f"""
+        ________________________________________________________________________________________________________________
+         Name:{clients[1]} | Phone: {clients[2]} | Address:{clients[3]} | Price:""" + f'\033[0;32;40m{clients[6]}\033[0m\n' +
+         f"""         ID: {clients[0]:<2}| Footage ^2: {clients[5]} | Started on: {clients[7]} | City: {clients[4]}
+        ________________________________________________________________________________________________________________""",end='')
+        input("Press 'Enter' to go back: ")
+        sp.run('cls', shell=True)  # this will clear the terminal , so the old output doesnt show with the new output.
+
+    if consult_name == "ALL":
+        cur.execute(f"SELECT * FROM clients;")
+        IDnumber = cur.fetchall()  # Fetchall returns a list with all the rows, each row is a tuple within the list. Fetchone() will return just one row at a time.
+
+        for clients in IDnumber:
+            print(f"""
+                ________________________________________________________________________________________________________________
+                 Name:{clients[1]} | Phone: {clients[2]} | Address:{clients[3]} | Price:""" + f'\033[0;32;40m{clients[6]}\033[0m\n' +
+                  f"""                 ID: {clients[0]:<2}| Footage ^2: {clients[5]} | Started on: {clients[7]} | City: {clients[4]}
+                ________________________________________________________________________________________________________________""",end='')
+        input("""
+        Press 'Enter' to go back: """)
+        sp.run('cls', shell=True)  # this will clear the terminal , so the old output doesnt show with the new output.
     just_close_database()
 #THE ACTUAL APPLICATION
 def main():
@@ -100,7 +146,9 @@ def main():
                 Delete_Client()
             if action == 3 : #Consult Client Info.
                 Consult_Client()
-            if action == 4 :
+            if action == 4:
+                Update_Client()
+            if action == 5 :
                 leave = 1
 
 
